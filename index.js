@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient } = require('mongodb');
 const ObjectId = require('mongodb').ObjectId;
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
