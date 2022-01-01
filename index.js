@@ -19,6 +19,7 @@ async function run() {
         await client.connect();
         const database = client.db("hero-rider");
         const usersCollection = database.collection("users");
+        const packagesCollection = database.collection("packages");
 
 
         // save a sign up user
@@ -28,6 +29,25 @@ async function run() {
             res.send(result);
         })
 
+        // get sign in user
+        app.get('/allUser', async (req, res) => {
+            let { page, size } = req.query;
+            if (!page) {
+                page = 1
+            }
+            if (!size) {
+                size = 4
+            }
+            const count = await usersCollection.find({}).count();
+            console.log(count)
+            const limit = parseInt(size)
+            const skip = page * size;
+            const result = await usersCollection.find({}, { limit: limit, skip: skip }).toArray();
+            res.send({
+                count,
+                result
+            });
+        })
 
         // get an rider
         app.get('/saveUser/:email', async (req, res) => {
@@ -36,35 +56,48 @@ async function run() {
             res.json(result);
         })
 
+        // get an rider
+        app.get('/packages', async (req, res) => {
+            const result = await packagesCollection.find({}).toArray();
+            res.json(result);
+        })
 
-        // // get an admin
-        // app.get('/saveUser/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     const result = await usersCollection.findOne({ email: email });
-        //     let isAdmin = false;
-        //     if (result?.role === 'admin') {
-        //         isAdmin = true;
-        //     }
-        //     res.json({ admin: isAdmin });
-        // })
 
-        // // add an admin
-        // app.put('/makeAdmin/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     const query = await usersCollection.findOne({ email: email });
-        //     if (query) {
-        //         const updatedDoc = {
-        //             $set: {
-        //                 role: 'admin',
-        //             }
-        //         }
-        //         const result = await usersCollection.updateOne(query, updatedDoc);
-        //         res.json(result);
-        //     }
-        //     else {
-        //         res.status(403).json({ message: 'You do not have permission to make admin' })
-        //     }
-        // })
+        // find specific user to update
+        app.get("/allUser/:id", async (req, res) => {
+            const id = req.params.id;
+            const result = await usersCollection.findOne({ _id: ObjectId(id) });
+            res.send(result);
+        });
+        // status update
+        app.put("/allUser/:id", async (req, res) => {
+            const id = req.params.id;
+            const updateStatus = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: updateStatus.status,
+                },
+            };
+            const result = await usersCollection.updateOne(
+                filter,
+                updateDoc,
+            );
+            res.json(result);
+        });
+
+
+        // get an admin
+        app.get('/saveUser/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await usersCollection.findOne({ email: email });
+            let isAdmin = false;
+            if (result?.role === 'admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin });
+        })
+
     }
 
     finally {
