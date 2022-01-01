@@ -39,7 +39,6 @@ async function run() {
                 size = 4
             }
             const count = await usersCollection.find({}).count();
-            console.log(count)
             const limit = parseInt(size)
             const skip = page * size;
             const result = await usersCollection.find({}, { limit: limit, skip: skip }).toArray();
