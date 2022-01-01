@@ -62,6 +62,12 @@ async function run() {
             res.json(result);
         })
 
+        app.get('/packages/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await packagesCollection.findOne({ _id: ObjectId(id) });
+            res.json(result);
+        })
+
 
         // find specific user to update
         app.get("/allUser/:id", async (req, res) => {
@@ -96,6 +102,18 @@ async function run() {
                 isAdmin = true;
             }
             res.json({ admin: isAdmin });
+        })
+
+        app.post('/create-checkout-session', async (req, res) => {
+            const paymentInfo = req.body;
+            const amount = paymentInfo.price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                payment_method_types: ['card']
+            });
+            res.json({ clientSecret: paymentIntent.client_secret })
+
         })
 
     }
